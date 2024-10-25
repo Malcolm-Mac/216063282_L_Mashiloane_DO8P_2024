@@ -1,0 +1,55 @@
+version: '4.28.0'
+
+networks:
+  compliance-admin:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local
+
+services:
+  app:
+    build:
+      args:
+        user: compliance-admin
+        uid: 1000
+      context: ./.docker/app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+      - ./.docker/app/php.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - compliance-admin
+
+  compliance-admin-web:
+    image: nginx
+    container_name: compliance-admin-web
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    networks:
+      - compliance-admin
+    volumes:
+      - ./:/var/www
+      - ./.docker/nginx:/etc/nginx/conf.d
+
+  compliance-admin-db:
+    networks:
+      - compliance-admin
+    image: mysql:8.3.0
+    container_name: compliance-admin-db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3309:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
