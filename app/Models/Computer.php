@@ -17,6 +17,22 @@ class Computer extends Model
         return $this->hasMany(ComplianceCheck::class);
     }
 
+    public function complianceAssignments()
+    {
+        return $this->hasMany(ComplianceAssignment::class);
+    }
+
+    // Access benchmarks through assignments
+    public function benchmarks()
+    {
+        return $this->belongsToMany(ComplianceBenchmark::class, 'compliance_assignments');
+    }
+
+    public function networkScan()
+{
+    return $this->belongsTo(NetworkScan::class);
+}
+
     // Retrieve the latest compliance status from ComplianceCheck
     public function getLatestComplianceStatusAttribute()
     {

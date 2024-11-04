@@ -10,4 +10,9 @@ class ComplianceBenchmark extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    public function computers()
+    {
+        return $this->belongsToMany(Computer::class, 'compliance_assignments');
+    }
 }

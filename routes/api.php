@@ -10,4 +10,5 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/agent/report', [AgentController::class, 'report']);
 Route::get('/agent/command/{os}', [AgentController::class, 'getCommand']);
+Route::post('/api/agent/trigger/{os}', [AgentController::class, 'triggerAgent']);
 

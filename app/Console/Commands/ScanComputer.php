@@ -6,6 +6,7 @@ use App\Models\Computer;
 use App\Models\ComplianceBenchmark;
 use App\Models\ComplianceCheck;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class ScanComputer extends Command
 {
@@ -35,7 +36,7 @@ class ScanComputer extends Command
         $computerName = gethostname();
         $ipAddress = gethostbyname(gethostname());
 
-        $ram = ini_get('memory_limit'); // Example for gathering RAM
+        $ram = ini_get('memory_limit');
         $diskFree = disk_free_space("/");
         $diskTotal = disk_total_space("/");
 
@@ -64,7 +65,7 @@ class ScanComputer extends Command
             ]);
         }
 
-        $this->info('Scan completed.');
+        Log::info('Scan completed.');
     }
 
     private function checkCompliance($benchmark, $ram, $diskFree, $diskTotal)

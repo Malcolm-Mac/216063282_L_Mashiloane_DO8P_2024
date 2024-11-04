@@ -27,7 +27,8 @@ RUN apt-get update && apt-get install -y \
     locales \
     zip \
     jpegoptim optipng pngquant gifsicle \
-    vim
+    vim \
+    nmap
 
 RUN apt-get update -yq \
     && apt-get -yq install curl gnupg ca-certificates \

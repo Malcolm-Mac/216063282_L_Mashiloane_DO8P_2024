@@ -9,9 +9,12 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\ActionGroup;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ComplianceCheckResource extends Resource
@@ -47,17 +50,31 @@ class ComplianceCheckResource extends Resource
                 Tables\Columns\TextColumn::make('details')->limit(50),
             ])
             ->filters([
-                //
+                Filter::make('compliant')
+                    ->query(fn(Builder $query) => $query->where('status', 'compliant'))
+                    ->label('Compliant'),
+                Filter::make('non_compliant')
+                    ->query(fn(Builder $query) => $query->where('status', 'non-compliant'))
+                    ->label('Non-compliant'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('Run Compliance Check')
-                    ->action(function (ComplianceCheck $record) {
-                        Artisan::call('compliance:check', [
-                            'computerId' => $record->computer_id,
-                        ]);
-                        return redirect()->route('filament.resources.compliance-checks.index');
+                ActionGroup::make([
+                Tables\Actions\Action::make('Trigger Linux Agent')
+                    ->action(function () {
+                        // Call the API to trigger the agent
+                        self::triggerAgent('linux');
                     }),
+                Tables\Actions\Action::make('Trigger macOS Agent')
+                    ->action(function () {
+                        // Call the API to trigger the agent
+                        self::triggerAgent('macos');
+                    }),
+                Tables\Actions\Action::make('Trigger Windows Agent')
+                    ->action(function () {
+                        // Call the API to trigger the agent
+                        self::triggerAgent('windows');
+                    }),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -80,5 +97,15 @@ class ComplianceCheckResource extends Resource
             'create' => Pages\CreateComplianceCheck::route('/create'),
             'edit' => Pages\EditComplianceCheck::route('/{record}/edit'),
         ];
+    }
+
+    protected static function triggerAgent($os)
+    {
+        // Call the API to trigger the agent
+        $response = Http::post(url('/api/agent/trigger/' . $os));
+        
+        // Handle the response as needed, e.g., show a success message or log it
+        // You can use a Toast notification here if you want
+        return $response->json();
     }
 }
